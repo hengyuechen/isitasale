@@ -351,3 +351,9 @@ MigrationBackup/
 
 # default output folder
 out/
+
+/*runJob*
+
+*.DS_Store
+
+.vscode/*

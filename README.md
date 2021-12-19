@@ -1,3 +1,5 @@
+Remember to respect the `robots.txt` of whatever site you're scraping!
+___
 # isitasale
 Quick script for me to check if sites are really having sales or if it's a sales tatic.
 
