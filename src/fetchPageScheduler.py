@@ -4,7 +4,7 @@ import requests
 import urllib.request
 from datetime import datetime
 from typing import List, Type
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 # pip3 install selenium
 from selenium import webdriver
@@ -33,8 +33,6 @@ allAssets = dict()
 def fetchAllUrls(urls: List[str]):
     allThreads = list()
     for url in urls:
-        crawlThread = Thread(target=crawl, args=(url, 0))
-        crawlThread.start()
         snapshotThread = Thread(target=fetchSnapshot, args=(url,))
         snapshotThread.start()
         
@@ -42,37 +40,12 @@ def fetchAllUrls(urls: List[str]):
         
     for thread in allThreads:
         thread.join()
-    dumpAssets(urls)
 
-def crawl(rootUrl, depth=0):
-    if depth < 0:
-        return
-    if rootUrl not in allAssets:
-        content = urllib.request.urlopen(urllib.request.Request(rootUrl, \
-            data=None, headers={'User-Agent': userAgent})).read()
-        soup = BeautifulSoup(content)
-        allAssets[rootUrl] = content.decode('utf-8')
-        links = soup('a')
-        for link in links:
-            if 'href' in dict(link.attrs):
-                url = urljoin(rootUrl, link['href'])
-                if url.find("'") != -1:
-                    continue
-                url = url.split('#')[0] 
-                if url[0:4] == 'http':
-                    crawl(url, depth - 1)
-
-def dumpAssets(urls: List[str]):
-    for k, v in allAssets.items():
-        outFolder = os.path.join(getOutputFolder(k), 'assets')
-        outFolder = os.path.join(getOutputFolder(k), 'assets', 'nestedAssets')
+def dumpAsset(url: str, driver):
+        outFolder = os.path.join(getOutputFolder(url), 'assets')
         createFolderIfNotExist(outFolder)
-        if k not in set(urls):
-            with open(os.path.join(outFolder, 'nestedAssets', encodeUrl(k)), 'w') as f:
-                f.write(v)
-        else:
-            with open(os.path.join(outFolder, getOutputFileName(k) + '.html'), 'w') as f:
-                f.write(v)
+        with open(os.path.join(outFolder, getOutputFileName(url) + '.html'), 'w') as f:
+            f.write(driver.page_source)
                 
 def fetchSnapshot(url: str):
     driver = webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=chromeOptions)
@@ -84,9 +57,9 @@ def fetchSnapshot(url: str):
     outFolder = os.path.join(getOutputFolder(url), 'scrsht')
     createFolderIfNotExist(outFolder)
     
-    el.screenshot(os.path.join(outFolder, getOutputFileName(url) + '.png'))   
+    el.screenshot(os.path.join(outFolder, getOutputFileName(url) + '.png')) 
+    dumpAsset(url, driver)  
     driver.quit()
-    
     
 def expandWindow(driver: Type[webdriver.Chrome]):
     original_size = driver.get_window_size()

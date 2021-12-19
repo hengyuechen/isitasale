@@ -1,12 +1,12 @@
 # isitasale
 Quick script for me to check if sites are really having sales or if it's a sales tatic.
 
-Dumps a screenshot of the url, and its assets in the following folder structure:
+Dumps a screenshot of the url, and its rendered html page in the following folder structure:
 ```
 rootfolder
  | -> date
     | -> scrsht
-    | -> source
+    | -> assets
 ```
 
 ## Setup
